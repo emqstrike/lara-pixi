@@ -13,3 +13,4 @@
 
 Route::get('/', 'PixiController@index');
 Route::post('upload', 'PixiController@upload');
+Route::get('fonts', 'PixiController@getStoredFonts');

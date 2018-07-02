@@ -8,23 +8,28 @@ use Illuminate\Support\Facades\Storage;
 class PixiController extends Controller
 {
     public function index() {
-    	$fonts = Storage::disk('public')->files('fonts');
-    	$fontNames = [];
-
-    	foreach($fonts as $font) {
-    		$font = preg_split('/[.\/-]/' , $font);
-    		$fontNames[] = strtolower($font[1]);
-    	}
+    	$fontNames = $this->getStoredFonts();	
     	return view('pages.home', compact('fontNames'));
     }
 
     public function upload(Request $request) {
     	$file = $request->file('font');
-    	$fileName = $request->file('font')->getClientOriginalName();
-
-    	// $request->file('font')->store('fonts');
-
-    	$file->storeAs('fonts', $fileName, 'public');
-    	return back();
+    	// $fileName = $request->file('font')->getClientOriginalName();
+    	// $file->storeAs('fonts', $fileName, 'public');
+  		return $this->getStoredFonts();
     }
+
+    public function getStoredFonts() {
+    	$getFonts = Storage::disk('public')->files('fonts');
+    	$fonts = [];
+
+    	foreach($getFonts as $font) {
+    		$font = preg_split('/[.\/-]/' , $font);
+    		$fonts[] = preg_replace('/([a-z])([A-Z 1-9])/s','$1 $2', $font[1]);
+    		
+    	}
+
+    	return $fonts;
+    }
+
 }

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Laravel and PixiJS - Demo</title>
+<meta name="_token" content="{{ csrf_token() }}"/>
 
 @include('includes.head')
 </head>
@@ -15,6 +16,6 @@
 		</div>
 	</div>
 
-</body>
 @include('includes.footer')
+</body>
 </html>
