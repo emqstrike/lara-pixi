@@ -13,4 +13,7 @@
 
 Route::get('/', 'PixiController@index');
 Route::post('upload', 'PixiController@upload');
+Route::get('pdf-view/text/{text}/image/{image}', 'PixiController@pdfTestView');
+
+// Tests
 Route::get('fonts', 'PixiController@getStoredFonts');

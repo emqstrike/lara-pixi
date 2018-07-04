@@ -10,26 +10,22 @@
 	resources = PIXI.loader.resources;
 
 	let app = new Application({resolution: 1, antialias: true, transparent: false});
-
-	var fonts = ['Eater', 'Press Start 2P', 'Spirax'];
-
-	WebFont.load({
-			custom: {
-			families: fonts,
-			urls: ['/css/myFonts.css']
-		},
-		active: function() {
-			console.log('fonts loaded');
-		}
-	});
-
+		
 	$('#canvas-container').html(app.view);
 
-	var sheets = document.styleSheets
-	var myFontsSheet = sheets[1];
-	var myStylesSheet = sheets[3];
+	var fonts = ['Eater', 'Press Start 2P'];
+	webFontLoad(fonts);
 
-	let message, messageStyle;
+	function webFontLoad(fonts) {
+		WebFont.load({
+			custom: {
+				families: fonts,
+				urls: ['/css/myFonts.css']
+			}
+		});
+	}
+
+	let message, messageStyle, fontPath;
 
 	const hexRed = 0xFF0000,
 		hexBlue = 0x0000FF,
@@ -62,14 +58,14 @@
 
 	app.stage.addChild(message, cat);
 
+	// PDF View
+	$('#pdf-view-btn').on('click', pdfView);
+
 	// Change image color
 	$('#red-btn').on('click', imageRed);
 	$('#blue-btn').on('click', imageBlue);
 	$('#green-btn').on('click', imageGreen);
-	$('#default-btn').on('click', imageDefault);
-
-	// Change Font Style
-	// $('.font-btn').on('click', changeFont);
+	$('#default-color-btn').on('click', imageDefault);
 
 	// Move Image
 	$('#mvm-btn-right').on('click', right);
@@ -77,6 +73,12 @@
 	$('#mvm-btn-up').on('click', up);
 	$('#mvm-btn-down').on('click', down);
 
+	// Scale Image
+	$('#plus-btn').on('click', plus);
+	$('#minus-btn').on('click', minus);
+	$('#default-scale-btn').on('click', imageScaleDefault);
+
+	// Upload Fonts
 	$('#upload-form').submit(function(event) {
 		event.preventDefault();
 
@@ -86,43 +88,90 @@
 		var formData = new FormData($(this)[0]);
 
 		ajax_cb(method, url, formData, function(data) {
-			console.log(data.length);
-			var button;
+			var button = '';
+			var addFontFaceRules='', addCssRules='';
 			_.each(data, function(val, key) {
 
-				// $('[style type="text/css"]' + demo + '[/style]').appendTo('head');
+				if(!fonts.includes(val)) fonts.push(val);
 
-				// addCSSRule(myFontsSheet, '@font-face', 'font-family: ' +  + );
+				addFontFaceRules += fontRules(val, key);
+				addCssRules += cssRules(val);
 
-				button = '<button class="uk-button uk-button-default uk-width-1-1 uk-margin-small '+val+' font-btn" data-data="'+val+'">';
+				button += '<button onclick="changeFont(\''+val+'\', \''+key+'\')" class="uk-button uk-button-default uk-width-1-1 uk-margin-small '+removeSpace(val)+' font-btn" data-data="'+val+'">';
 				button += val;
 				button += '</button>';
+
 			});
+
+			webFontLoad(fonts);
+
+			$('<style type="text/css">' + addFontFaceRules + '</style>').appendTo('head');
+			$('<style type="text/css">' + addCssRules + '</style>').appendTo('head');
 			$('#fonts-container').html(button);
 		});
 		
 	});
 
-	function changeFont(font) {
+	function fontRules(font, path) {
+		var css = '';
+		css += '@font-face';
+		css += '{';
+			css += 'font-family';
+			css += ':';
+			css += '"'+font+'"';
+			css += '; ';
+			css += 'src';
+			css += ':';
+			css += 'url('+'"/storage/'+path+'")';
+			css += ';';
+		css += '} ';
+		return css;
+	}
+
+	function cssRules(cssName) {
+		var css = '';
+		css += '.' + removeSpace(cssName);
+		css += '{';
+			css += 'font-family';
+			css += ':';
+			css += '"'+cssName+'"';
+			css += ';';
+		css += '} ';
+		return css;
+	}
+
+	function changeFont(font, path=null) {
+		if(path != null) fontPath=path;
 		var newFont = defaultStyle(font);
 		message.style = newFont;
 	}
 
 	function defaultStyle(font) {
-		// switch (font) {
-		// 	case 'spirax': font={fill:'white', stroke:'#ff3300', strokeThickness:4, fontSize:50, fontFamily:'Spirax'};
-		// 	break;
-
-		// 	case 'pressstart2p': font={fill:'white', stroke:'#ff3300', strokeThickness:4, fontSize:50, fontFamily:'Press Start 2P'};
-		// 	break;				
-
-		// 	case 'eater': font={fill:'white', stroke:'#ff3300', strokeThickness:4, fontSize:50, fontFamily:'Eater'};
-		// 	break;
-
-		// 	default: font={fill:'white', stroke:'#ff3300', strokeThickness:4, fontSize:50, fontFamily:'Arial'};
-		// }
-		newFont = {fill:'white', stroke:'#ff3300', strokeThickness:4, fontSize:50, fontFamily: font};
+		newFont = {
+			fill:'white', 
+			stroke:'#ff3300', 
+			strokeThickness:4, 
+			fontSize:50, 
+			fontFamily: font
+		};
 		return newFont;
+	}
+
+	function plus() {
+		cat.scale.x += 0.5;
+		cat.scale.y += 0.5;
+	}
+
+	function minus() {
+		if( cat.scale.x > 0.375 && cat.scale.y > 0.375) {
+			cat.scale.x -= 0.5;
+			cat.scale.y -= 0.5;
+		}
+	}
+
+	function imageScaleDefault() {
+		cat.scale.x = 1.875;
+		cat.scale.y = 1.875;
 	}
 
 	function right() {
@@ -175,7 +224,6 @@
 			type: method,
 			url: url,
 			data: data,
-			dataTyoe: 'JOSN',
 			processData: false,
 			contentType: false,
 			success: function(data) {
@@ -196,6 +244,40 @@
 		else if("addRule" in sheet) {
 			sheet.addRule(selector, rules, index);
 		}
+	}
+
+	function removeSpace(str) {
+		return str.replace(/\s+/g, '');
+	}
+
+	function pdfView() {
+		var $ = jQuery;
+		var getStyle, textData, imageData, fontSource;
+
+		getStyle = message.style;
+
+		textData = {
+			text: message.text,
+			fontFamily: getStyle._fontFamily,
+			fontSize: getStyle._fontSize,
+			fill: getStyle._fill, 
+			stroke: getStyle._stroke, 
+			strokeThickness: getStyle._strokeThickness, 
+		}
+
+		if(fontPath != null) var fontSource = { fontSource: fontPath.split('/')[1] };
+
+		imageData = {
+			image: 'cat.png',
+			width: cat.scale.x,
+			height: cat.scale.y,
+			color: '#' + ('00000' + (cat.tint.toString(16))).substr(-6),
+		}
+
+		console.log($.param(fontSource));
+		// var url = window.location.href + 'pdf-view';
+
+		// window.open(url + "/text/" + $.param(textData) + '/image/' + $.param(imageData), '_blank');
 	}
 
 </script>
