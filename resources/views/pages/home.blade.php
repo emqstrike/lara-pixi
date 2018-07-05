@@ -25,11 +25,11 @@
 			</h5>
 	        
 			<div id="fonts-container">
-			@foreach($fontNames as $font)
+			@foreach($fontNames as $key=>$font)
 				<button 
 					class="uk-button uk-button-default uk-width-1-1 uk-margin-small {{ preg_replace('/\s+/', '', $font) }} font-btn" 
 					data-data="{{ $font }}" 
-					onclick="changeFont('{{ $font }}')">
+					onclick="changeFont('{{ $font }}','{{ $key }}')">
 					{{ ucfirst($font) }}
 				</button>
 			@endforeach	

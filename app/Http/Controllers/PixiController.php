@@ -40,14 +40,13 @@ class PixiController extends Controller
     	$textData[] = $this->parseStringQuery($text);
 		$imageData[] = $this->parseStringQuery($image);
 
-    	return [
-            'text' => $textData[0],
-            'image' => $imageData[0] 
-        ];
-
-		// $pdf = \App::make('dompdf.wrapper');
-		// $pdf->loadHTML(View('pages.pdf-view')->render());
-		// return $pdf->stream();
+		$pdf = \App::make('dompdf.wrapper');
+		$pdf->loadHTML(View('pages.pdf-view', 
+            [
+                'textData' => $textData[0], 
+                'imageData' => $imageData[0]
+            ])->render());
+		return $pdf->stream();
     }
 
     public function parseStringQuery($queryString) {

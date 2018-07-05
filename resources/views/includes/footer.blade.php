@@ -97,7 +97,8 @@
 				addFontFaceRules += fontRules(val, key);
 				addCssRules += cssRules(val);
 
-				button += '<button onclick="changeFont(\''+val+'\', \''+key+'\')" class="uk-button uk-button-default uk-width-1-1 uk-margin-small '+removeSpace(val)+' font-btn" data-data="'+val+'">';
+				button += '<button onclick="changeFont(\''+val+'\', \''+key+'\')" ';
+				button += 'class="uk-button uk-button-default uk-width-1-1 uk-margin-small '+removeSpace(val)+' font-btn" data-data="'+val+'">';
 				button += val;
 				button += '</button>';
 
@@ -252,32 +253,44 @@
 
 	function pdfView() {
 		var $ = jQuery;
-		var getStyle, textData, imageData, fontSource;
+		var getStyle, textData, imageData;
 
 		getStyle = message.style;
 
-		textData = {
-			text: message.text,
-			fontFamily: getStyle._fontFamily,
-			fontSize: getStyle._fontSize,
-			fill: getStyle._fill, 
-			stroke: getStyle._stroke, 
-			strokeThickness: getStyle._strokeThickness, 
+		if(fontPath != null) {
+			textData = {
+				text: message.text,
+				fontFamily: getStyle._fontFamily,
+				fontSource: fontPath.split('/')[1],
+				fontSize: getStyle._fontSize,
+				fill: getStyle._fill, 
+				stroke: getStyle._stroke, 
+				strokeThickness: getStyle._strokeThickness, 
+			}
+		} else {
+			textData = {
+				text: message.text,
+				fontFamily: getStyle._fontFamily,
+				fontSize: getStyle._fontSize,
+				fill: getStyle._fill, 
+				stroke: getStyle._stroke, 
+				strokeThickness: getStyle._strokeThickness, 
+			}
 		}
-
-		if(fontPath != null) var fontSource = { fontSource: fontPath.split('/')[1] };
 
 		imageData = {
 			image: 'cat.png',
-			width: cat.scale.x,
-			height: cat.scale.y,
+			width: cat.width,
+			height: cat.height,
 			color: '#' + ('00000' + (cat.tint.toString(16))).substr(-6),
 		}
 
-		console.log($.param(fontSource));
-		// var url = window.location.href + 'pdf-view';
+		// console.log('textData: ' + JSON.stringify(textData));
+		// console.log('imageData: ' + JSON.stringify(imageData));
 
-		// window.open(url + "/text/" + $.param(textData) + '/image/' + $.param(imageData), '_blank');
+		var url = window.location.href + 'pdf-view';
+
+		window.open(url + "/text/" + $.param(textData) + '/image/' + $.param(imageData), '_blank');
 	}
 
 </script>
